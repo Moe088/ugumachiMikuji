@@ -1,4 +1,4 @@
-// シンプルなおみくじ JS（12枚の画像を images/omikuji1.png ... omikuji12.png に入れてください）
+// シンプルなおみくじ JS（images はルートの /images/omikuji1.png ... を参照します）
 (() => {
   const TOTAL = 12;
   const drawBtn = document.getElementById('drawBtn');
@@ -8,33 +8,48 @@
   const resultText = document.getElementById('resultText');
   const confettiCanvas = document.getElementById('confettiCanvas');
 
-  // 12種の文言（お好みで差し替えてください）
-//  const fortunes = [
-  //  "大吉 — 素敵なことが起きます",
- //   "中吉 — いい流れに乗れます",
- //   "小吉 — 穏やかな一日",
-//    "吉 — ほどほどに良し",
-//    "末吉 — 慎重に進めば吉",
- //   "凶 — 気を引き締めて",
- //   "大凶 — チャンスは小さくない",
- //   "運気上昇 — 努力が実を結ぶ",
- //   "恋愛運良好 — 新しい出会いに期待",
- //   "金運上昇 — 思わぬ臨時収入",
-//    "健康運良好 — 体調管理を大切に",
-//    "挑戦の時 — 一歩踏み出してみよう"
-//  ];
+  // 画像パスを作成（ルート絶対パスにすることで Vercel や public 配下で確実に参照できます）
+  const images = Array.from({length: TOTAL}, (_, i) => `/images/omikuji${i+1}.png`);
 
-  // 画像パスを作成
-  const images = Array.from({length: TOTAL}, (_, i) => `images/omikuji${i+1}.png`);
-
-  // 画像プリロード
-  images.forEach(src => {
-    const i = new Image();
-    i.src = src;
-  });
-  // optional: back image for front face
+  // back image もルート絶対パス
   const backImage = new Image();
-  backImage.src = 'images/omikuji-back.png';
+  backImage.src = '/images/omikuji-back.png';
+  backImage.onerror = () => {
+    console.error('[omikuji] omikuji-back.png が見つかりません。/images/omikuji-back.png を配置してください。');
+  };
+
+  // 画像プリロード（失敗時ログ）
+  images.forEach((src, idx) => {
+    const img = new Image();
+    img.onload = () => {
+      // 正常に読み込めた
+    };
+    img.onerror = () => {
+      console.error(`[omikuji] 画像の読み込み失敗: ${src} (index=${idx})`);
+    };
+    img.src = src;
+  });
+
+  // デバッグ用: サーバにファイルがあるか簡易チェック（最初の画像だけ）
+  async function checkImage(url) {
+    try {
+      const resp = await fetch(url, { method: 'HEAD' });
+      console.info(`[omikuji] HEAD ${url} -> ${resp.status}`);
+      return resp.ok;
+    } catch (e) {
+      console.warn(`[omikuji] ${url} のチェックでエラー`, e);
+      return false;
+    }
+  }
+  // ページ読み込み後に一度だけ確認ログ（任意）
+  window.addEventListener('load', () => {
+    // 最初の画像をチェックして、問題があれば目立つログを出す
+    checkImage(images[0]).then(ok => {
+      if (!ok) {
+        console.warn('[omikuji] 最初の画像が配信されていない可能性があります。curl -I <URL>/images/omikuji1.png を実行してステータスを確認してください。');
+      }
+    });
+  });
 
   // キーボード / タッチ処理
   function bindKeys() {
@@ -62,9 +77,18 @@
       setTimeout(() => {
         const idx = Math.floor(Math.random() * TOTAL);
         const img = images[idx];
+
+        // 画像をセット（img が 404 の場合は onerror で検知）
+        resultImage.onload = () => {
+          // 正常に表示されたら何もしない
+        };
+        resultImage.onerror = () => {
+          console.error(`[omikuji] 結果画像の読み込み失敗: ${img}`);
+          // フォールバック: 背景グラデを適用して画像がないことを視覚的に示す
+          resultImage.style.background = 'linear-gradient(135deg,#ffd6e0,#e2f9ff)';
+          resultImage.src = '';
+        };
         resultImage.src = img;
-        //resultImage.alt = fortunes[idx];
-        //resultText.textContent = fortunes[idx];
 
         // flip
         card.classList.add('flipped');
@@ -94,6 +118,7 @@
   /* --- 簡易コンフェッティ実装 --- */
   function launchConfetti() {
     const canvas = confettiCanvas;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let W = canvas.width = window.innerWidth;
     let H = canvas.height = window.innerHeight;
