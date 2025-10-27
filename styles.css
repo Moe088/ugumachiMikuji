@@ -1,0 +1,174 @@
+:root{
+  --bg1: #0f172a;
+  --bg2: #1e293b;
+  --accent1: #ff7a9a;
+  --accent2: #7afcff;
+  --glass: rgba(255,255,255,0.06);
+  --glass-2: rgba(255,255,255,0.04);
+  --text: #e6eef8;
+  --muted: #9fb0c8;
+  --radius: 16px;
+  --shadow: 0 8px 30px rgba(2,6,23,0.6);
+  font-family: "Noto Sans JP", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{
+  margin:0;
+  min-height:100vh;
+  color:var(--text);
+  background: linear-gradient(180deg, var(--bg1) 0%, var(--bg2) 60%);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:32px;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+.page{
+  width:100%;
+  max-width:920px;
+  margin:0 auto;
+  text-align:center;
+}
+
+.header{
+  margin-bottom:28px;
+}
+.title{
+  margin:0;
+  font-size:48px;
+  letter-spacing:1px;
+  text-shadow: 0 2px 18px rgba(0,0,0,0.6);
+}
+.subtitle{
+  margin:6px 0 0;
+  color:var(--muted);
+}
+
+/* ステージ */
+.stage{
+  background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  border-radius: calc(var(--radius) + 8px);
+  padding:36px;
+  box-shadow: var(--shadow);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:18px;
+}
+
+/* カード */
+.card{
+  width:360px;
+  height:509px;
+  perspective:1400px;
+  position:relative;
+}
+.card-face{
+  position:absolute;
+  inset:0;
+  border-radius:12px;
+  overflow:hidden;
+  backface-visibility:hidden;
+  transform-style:preserve-3d;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-direction:column;
+  gap:12px;
+  padding:18px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border:1px solid var(--glass-2);
+  box-shadow: 0 6px 24px rgba(2,6,23,0.5);
+}
+.card-front{
+  transform: rotateY(0deg);
+}
+.card-back{
+  transform: rotateY(180deg);
+}
+
+/* flip */
+.card.flipped .card-front{ transform: rotateY(-180deg); }
+.card.flipped .card-back{ transform: rotateY(0deg); }
+
+.card-image, .result-image{
+  width:100%;
+  height:calc(100% - 72px);
+  object-fit:cover;
+  border-radius:10px;
+  box-shadow: 0 8px 28px rgba(2,6,23,0.5);
+}
+.label{
+  font-weight:700;
+  font-size:18px;
+  color:var(--text);
+  background: linear-gradient(90deg, var(--accent1), var(--accent2));
+  -webkit-background-clip:text;
+  background-clip:text;
+  color:transparent;
+}
+
+/* ボタン */
+.controls{display:flex;gap:12px;align-items:center;justify-content:center;margin-top:6px;}
+.btn{
+  padding:12px 20px;
+  border-radius:10px;
+  border:0;
+  cursor:pointer;
+  font-weight:700;
+  color:var(--bg1);
+  transition:transform .12s ease, box-shadow .12s;
+  box-shadow: 0 8px 18px rgba(2,6,23,0.4);
+}
+.btn:active{transform:translateY(1px)}
+.btn.primary{
+  background: linear-gradient(90deg, var(--accent1), var(--accent2));
+}
+.btn.secondary{
+  background: transparent;
+  color:var(--text);
+  border:1px solid rgba(255,255,255,0.06);
+}
+
+/* hint and footer */
+.hint{display:block;color:var(--muted);margin-top:8px}
+.footer{margin-top:18px;color:var(--muted);font-size:13px}
+
+/* 隠す */
+.hidden{display:none}
+
+/* シェイクアニメ */
+@keyframes shake {
+  0% { transform: rotate(0deg) translateY(0) }
+  20% { transform: rotate(-6deg) translateY(-2px) }
+  40% { transform: rotate(6deg) translateY(2px) }
+  60% { transform: rotate(-4deg) translateY(-1px) }
+  80% { transform: rotate(4deg) translateY(1px) }
+  100% { transform: rotate(0deg) translateY(0) }
+}
+.card.shake { animation: shake .9s cubic-bezier(.36,.07,.19,.97); }
+
+/* flip トランジション */
+.card-face{
+  transition: transform 700ms cubic-bezier(.2,.9,.25,1), opacity 250ms;
+}
+
+/* コンフェッティ canvas */
+.confetti{
+  position:fixed;
+  pointer-events:none;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+
+/* レスポンシブ */
+@media (max-width:480px){
+  .card{width:260px;height:360px}
+  .title{font-size:36px}
+  .stage{padding:20px}
+}

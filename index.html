@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>おみくじ - スタイリッシュ</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <h1 class="title">おおうぐみくじ</h1>
+      <p class="subtitle">今日の運勢は？</p>
+    </header>
+
+    <section class="stage">
+      <div class="card" id="card" aria-hidden="false">
+        <div class="card-face card-front" id="cardFront">
+          <img src="images/omikuji-back.png" alt="おみくじ" class="card-image">
+          <div class="label">おみくじ</div>
+        </div>
+        <div class="card-face card-back" id="cardBack" aria-hidden="true">
+          <!-- 裏面はランダムに切り替わる -->
+          <img src="" alt="結果" class="result-image" id="resultImage">
+          <div class="result-text" id="resultText"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="drawBtn" class="btn primary">おみくじを引く</button>
+        <button id="againBtn" class="btn secondary hidden">もう一度</button>
+      </div>
+    
+    </section>
+
+    <footer class="footer">
+      <p>© おおうぐみくじ — 作成者: 紅映（うぐいすの待ちびと）</p>
+    </footer>
+  </main>
+
+  <!-- コンフェッティ描画用 -->
+  <canvas id="confettiCanvas" class="confetti"></canvas>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
