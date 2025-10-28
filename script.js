@@ -9,13 +9,13 @@
   const confettiCanvas = document.getElementById('confettiCanvas');
 
   // 画像パスを作成（ルート絶対パスにすることで Vercel や public 配下で確実に参照できます）
-  const images = Array.from({length: TOTAL}, (_, i) => `/images/omikuji${i+1}.png`);
+  const images = Array.from({length: TOTAL}, (_, i) => `./images/omikuji${i+1}.png`);
 
   // back image もルート絶対パス
   const backImage = new Image();
-  backImage.src = '/images/omikuji-back.png';
+  backImage.src = './images/omikuji-back.png';
   backImage.onerror = () => {
-    console.error('[omikuji] omikuji-back.png が見つかりません。/images/omikuji-back.png を配置してください。');
+    console.error('[omikuji] omikuji-back.png が見つかりません。./images/omikuji-back.png を配置してください。');
   };
 
   // 画像プリロード（失敗時ログ）
