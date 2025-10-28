@@ -63,7 +63,7 @@ body{
 /* カード */
 .card{
   width:360px;
-  height:509px;
+  height:530px;
   perspective:1400px;
   position:relative;
 }
