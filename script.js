@@ -1,102 +1,108 @@
-// シンプルなおみくじ JS（images はルートの /images/omikuji1.png ... を参照します）
+// images はルートの /images/omikuji1.png ... を参照します。
+// 存在するファイルだけを検出して利用する実装（拡張子 png/jpg/jpeg/webp を順に試します）
 (() => {
   const TOTAL = 12;
   const drawBtn = document.getElementById('drawBtn');
   const againBtn = document.getElementById('againBtn');
   const card = document.getElementById('card');
   const resultImage = document.getElementById('resultImage');
-  const resultText = document.getElementById('resultText');
   const confettiCanvas = document.getElementById('confettiCanvas');
 
-  // 画像パスを作成（ルート絶対パスにすることで Vercel や public 配下で確実に参照できます）
-  const images = Array.from({length: TOTAL}, (_, i) => `./images/omikuji${i+1}.png`);
+  const exts = ['png','jpg','jpeg','webp'];
+  let images = []; // 実際に使う存在確認済みのURLリスト
 
-  // back image もルート絶対パス
-  const backImage = new Image();
-  backImage.src = './images/omikuji-back.png';
-  backImage.onerror = () => {
-    console.error('[omikuji] omikuji-back.png が見つかりません。./images/omikuji-back.png を配置してください。');
-  };
+  // 最初はボタン無効にして検出中にする
+  if (drawBtn) drawBtn.disabled = true;
 
-  // 画像プリロード（失敗時ログ）
-  images.forEach((src, idx) => {
-    const img = new Image();
-    img.onload = () => {
-      // 正常に読み込めた
-    };
-    img.onerror = () => {
-      console.error(`[omikuji] 画像の読み込み失敗: ${src} (index=${idx})`);
-    };
-    img.src = src;
-  });
-
-  // デバッグ用: サーバにファイルがあるか簡易チェック（最初の画像だけ）
-  async function checkImage(url) {
+  // 指定URLが存在するか確認（まず HEAD、失敗したら GET を試す）
+  async function urlExists(url) {
     try {
-      const resp = await fetch(url, { method: 'HEAD' });
-      console.info(`[omikuji] HEAD ${url} -> ${resp.status}`);
-      return resp.ok;
-    } catch (e) {
-      console.warn(`[omikuji] ${url} のチェックでエラー`, e);
-      return false;
+      const head = await fetch(url, { method: 'HEAD' });
+      if (head && head.ok) return true;
+    } catch (_) {}
+    try {
+      const get = await fetch(url, { method: 'GET' });
+      return get && get.ok;
+    } catch (_) {}
+    return false;
+  }
+
+  // 画像検出
+  async function detectImages() {
+    const found = [];
+    for (let i = 1; i <= TOTAL; i++) {
+      let okUrl = null;
+      for (const ext of exts) {
+        const url = `/images/omikuji${i}.${ext}`;
+        /* Note: on file:// or CSP-restricted hosts fetch HEAD may fail; this tries HEAD then GET */
+        // avoid too many parallel requests; sequential is fine for 12 images
+        /* eslint-disable no-await-in-loop */
+        const exists = await urlExists(url);
+        if (exists) { okUrl = url; break; }
+      }
+      if (okUrl) {
+        found.push(okUrl);
+      } else {
+        console.warn(`[omikuji] images/omikuji${i}.* が見つかりません (checked: ${exts.join(',')})`);
+      }
+    }
+    images = found;
+    images.forEach(src => { const im = new Image(); im.src = src; });
+    if (images.length > 0) {
+      if (drawBtn) drawBtn.disabled = false;
+    } else {
+      console.error('[omikuji] 有効な画像が一つも見つかりません。images フォルダに画像を配置してください。');
     }
   }
-  // ページ読み込み後に一度だけ確認ログ（任意）
+
   window.addEventListener('load', () => {
-    // 最初の画像をチェックして、問題があれば目立つログを出す
-    checkImage(images[0]).then(ok => {
-      if (!ok) {
-        console.warn('[omikuji] 最初の画像が配信されていない可能性があります。curl -I <URL>/images/omikuji1.png を実行してステータスを確認してください。');
+    // カード表面のバック画像もルート参照にしておく（存在しなければ console.warn）
+    const front = document.querySelector('#cardFront .card-image');
+    if (front) {
+      front.onerror = () => { front.style.background = 'linear-gradient(135deg,#ffd6e0,#e2f9ff)'; front.src = ''; };
+      // 既に src が相対の場合はルート絶対にした方が確実
+      if (front.getAttribute('src') && !front.getAttribute('src').startsWith('/')) {
+        front.src = '/images/omikuji-back.png';
       }
-    });
+    }
+
+    detectImages();
   });
 
-  // キーボード / タッチ処理
   function bindKeys() {
     window.addEventListener('keydown', (e) => {
-      if (e.key === ' ' || e.key === 'Enter') {
+      if ((e.key === ' ' || e.key === 'Enter') && !drawBtn.disabled) {
         e.preventDefault();
-        if (!drawBtn.disabled) triggerDraw();
+        triggerDraw();
       }
     });
   }
 
-  // メイン: 引く処理
   function triggerDraw() {
+    if (!images.length) return;
     drawBtn.disabled = true;
     drawBtn.classList.add('processing');
     card.classList.remove('flipped');
-    // まずシェイク
     card.classList.add('shake');
-    // わくわく音（WebAudioで短い音）
     playBeepSequence();
 
     setTimeout(() => {
       card.classList.remove('shake');
-      // 表示を裏返す
       setTimeout(() => {
-        const idx = Math.floor(Math.random() * TOTAL);
+        const idx = Math.floor(Math.random() * images.length);
         const img = images[idx];
 
-        // 画像をセット（img が 404 の場合は onerror で検知）
-        resultImage.onload = () => {
-          // 正常に表示されたら何もしない
-        };
+        resultImage.onload = () => {};
         resultImage.onerror = () => {
           console.error(`[omikuji] 結果画像の読み込み失敗: ${img}`);
-          // フォールバック: 背景グラデを適用して画像がないことを視覚的に示す
           resultImage.style.background = 'linear-gradient(135deg,#ffd6e0,#e2f9ff)';
           resultImage.src = '';
         };
         resultImage.src = img;
 
-        // flip
         card.classList.add('flipped');
-
-        // コンフェッティ
         launchConfetti();
 
-        // ボタン切り替え
         drawBtn.classList.add('hidden');
         againBtn.classList.remove('hidden');
         drawBtn.disabled = false;
@@ -104,18 +110,17 @@
     }, 900);
   }
 
-  // もう一度
-  againBtn.addEventListener('click', () => {
-    card.classList.remove('flipped');
-    againBtn.classList.add('hidden');
-    drawBtn.classList.remove('hidden');
-  });
-
-  drawBtn.addEventListener('click', triggerDraw);
-
+  if (againBtn) {
+    againBtn.addEventListener('click', () => {
+      card.classList.remove('flipped');
+      againBtn.classList.add('hidden');
+      drawBtn.classList.remove('hidden');
+    });
+  }
+  if (drawBtn) drawBtn.addEventListener('click', triggerDraw);
   bindKeys();
 
-  /* --- 簡易コンフェッティ実装 --- */
+  /* --- 以下は既存のコンフェッティ・サウンド関数（省略せずそのまま利用） --- */
   function launchConfetti() {
     const canvas = confettiCanvas;
     if (!canvas) return;
@@ -124,29 +129,21 @@
     let H = canvas.height = window.innerHeight;
     const particles = [];
     const colors = ['#ff7a9a','#ffd76b','#7afcff','#9be78f','#c7a7ff'];
-
-    // リサイズ対応
-    window.addEventListener('resize', () => {
-      W = canvas.width = window.innerWidth;
-      H = canvas.height = window.innerHeight;
-    });
-
-    // 初期パーティクル生成
+    window.addEventListener('resize', () => { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; });
     for (let i=0;i<120;i++){
       particles.push({
         x: Math.random() * W,
         y: -Math.random() * H * 0.5,
-        r: randRange(6,12),
+        r: Math.random()*6+6,
         d: Math.random() * 60 + 30,
         color: colors[Math.floor(Math.random()*colors.length)],
         tilt: Math.random() * 10 - 10,
         tiltSpeed: Math.random() * 0.07 + 0.05,
-        vx: randRange(-2,2),
-        vy: randRange(2,6),
+        vx: (Math.random()-0.5)*4,
+        vy: Math.random()*4+2,
         life: 100 + Math.random()*50
       });
     }
-
     let raf;
     function render() {
       ctx.clearRect(0,0,W,H);
@@ -154,40 +151,27 @@
         p.tilt += p.tiltSpeed;
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.03; // gravity
+        p.vy += 0.03;
         p.life -= 1;
-
         ctx.beginPath();
         ctx.fillStyle = p.color;
-        // シンプルに回転する長方形（紙片）
         ctx.save();
         ctx.translate(p.x, p.y);
         ctx.rotate(p.tilt * 0.1);
         ctx.fillRect(-p.r/2, -p.r/2, p.r*1.6, p.r*0.9);
         ctx.restore();
       }
-      // remove off-screen / dead
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         if (p.y > H + 50 || p.life <= 0) particles.splice(i,1);
       }
-      if (particles.length === 0) {
-        cancelAnimationFrame(raf);
-        ctx.clearRect(0,0,W,H);
-        return;
-      } else {
-        raf = requestAnimationFrame(render);
-      }
+      if (particles.length === 0) { cancelAnimationFrame(raf); ctx.clearRect(0,0,W,H); return; }
+      raf = requestAnimationFrame(render);
     }
     render();
-
-    // ヒット音
     playSpark();
-
-    function randRange(a,b){ return a + Math.random()*(b-a); }
   }
 
-  /* --- 簡易サウンド --- */
   function playBeepSequence(){
     try {
       const ctx = new (window.AudioContext || window.webkitAudioContext)();
@@ -203,9 +187,7 @@
         o.start(now + i * 0.06);
         o.stop(now + i * 0.06 + 0.08);
       });
-    } catch (e) {
-      // AudioContextが使えない場合は無音で進める
-    }
+    } catch (e) {}
   }
   function playSpark(){
     try {
@@ -217,19 +199,8 @@
       g.gain.value = 0.08;
       o.connect(g); g.connect(ctx.destination);
       o.start();
-      // 短くフェードアウト
       g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.25);
       o.stop(ctx.currentTime + 0.26);
     } catch(e){}
   }
-
-  // 初期画像が無ければプレースホルダを設定（任意）
-  document.addEventListener('DOMContentLoaded', () => {
-    const front = document.getElementById('cardFront').querySelector('.card-image');
-    // もし omikuji-back.png が無ければ淡いグラデ背景になる（画像は推奨）
-    front.onerror = () => {
-      front.style.background = 'linear-gradient(135deg,#ffd6e0,#e2f9ff)';
-      front.src = '';
-    };
-  });
 })();
