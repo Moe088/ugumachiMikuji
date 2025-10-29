@@ -29,7 +29,7 @@ body{
 
 .page{
   width:100%;
-  max-width:920px;
+  max-width:880px;
   margin:0 auto;
   text-align:center;
 }
@@ -167,7 +167,7 @@ body{
 }
 
 /* レスポンシブ */
-@media (max-width:480px){
+@media (max-width:440px){
   .card{width:234px;height:360px}
   .title{font-size:34px}
   .stage{padding:18px}
