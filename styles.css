@@ -57,7 +57,7 @@ body{
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap: 18px;px;
+  gap: 16px;px;
 }
 
 /* カード */
@@ -135,7 +135,7 @@ body{
 }
 
 /* hint and footer */
-.hint{color:var(--muted);margin-top:5px:font-size:13px}
+.hint{display:block;color:var(--muted);margin-top:5px:font-size:13px}
 .footer{margin-top:18px;color:var(--muted);font-size:10px}
 
 /* 隠す */
