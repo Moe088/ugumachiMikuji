@@ -104,7 +104,7 @@ body{
 }
 .label{
   font-weight:700;
-  font-size:18px;
+  font-size:16px;
   color:var(--text);
   background: linear-gradient(90deg, var(--accent1), var(--accent2));
   -webkit-background-clip:text;
