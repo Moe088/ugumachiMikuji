@@ -35,7 +35,7 @@ body{
 }
 
 .header{
-  margin-bottom:28px;
+  margin-bottom:20px;
 }
 .title{
   margin:0;
@@ -169,6 +169,6 @@ body{
 /* レスポンシブ */
 @media (max-width:480px){
   .card{width:234px;height:360px}
-  .title{font-size:36px}
-  .stage{padding:20px}
+  .title{font-size:34px}
+  .stage{padding:18px}
 }
