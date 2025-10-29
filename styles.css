@@ -135,7 +135,7 @@ body{
 }
 
 /* hint and footer */
-.hint{display:block;color:var(--muted);margin-top:5px:font-size:8px}
+.hint{color:var(--muted);margin-top:5px:font-size:13px}
 .footer{margin-top:18px;color:var(--muted);font-size:10px}
 
 /* 隠す */
