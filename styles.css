@@ -167,8 +167,8 @@ body{
 }
 
 /* レスポンシブ */
-@media (max-width:440px){
+@media (max-width:400px){
   .card{width:234px;height:360px}
   .title{font-size:30px}
-  .stage{padding:20px}
+  .stage{padding:15px}
 }
