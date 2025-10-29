@@ -62,8 +62,8 @@ body{
 
 /* カード */
 .card{
-  width:360px;
-  height:560px;
+  width:324px;
+  height:504px;
   perspective:1400px;
   position:relative;
 }
@@ -168,7 +168,7 @@ body{
 
 /* レスポンシブ */
 @media (max-width:480px){
-  .card{width:260px;height:400px}
+  .card{width:234px;height:360px}
   .title{font-size:36px}
   .stage{padding:20px}
 }
