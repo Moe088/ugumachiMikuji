@@ -55,7 +55,7 @@ body{
   padding:36px;
   box-shadow: var(--shadow);
   display:flex;
-  flex-direction:column;ß
+  flex-direction:column;
   align-items:center;
   gap: 18px;px;
 }
