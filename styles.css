@@ -50,14 +50,14 @@ body{
 
 /* ステージ */
 .stage{
-  background: linear-gradient(135deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
+  background: linear-gradient(125deg, rgba(255,255,255,0.03), rgba(255,255,255,0.01));
   border-radius: calc(var(--radius) + 8px);
   padding:36px;
   box-shadow: var(--shadow);
   display:flex;
-  flex-direction:column;
+  flex-direction:column;ß
   align-items:center;
-  gap:14px;
+  gap: 14px;px;
 }
 
 /* カード */
@@ -135,8 +135,8 @@ body{
 }
 
 /* hint and footer */
-.hint{display:block;color:var(--muted);margin-top:8px}
-.footer{margin-top:18px;color:var(--muted);font-size:13px}
+.hint{display:block;color:var(--muted);margin-top:7px}
+.footer{margin-top:18px;color:var(--muted);font-size:10px}
 
 /* 隠す */
 .hidden{display:none}
