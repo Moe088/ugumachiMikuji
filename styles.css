@@ -35,11 +35,11 @@ body{
 }
 
 .header{
-  margin-bottom:20px;
+  margin-bottom:18px;
 }
 .title{
   margin:0;
-  font-size:40px;
+  font-size:38px;
   letter-spacing:1px;
   text-shadow: 0 2px 18px rgba(0,0,0,0.6);
 }
